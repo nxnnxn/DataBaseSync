@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.databasesync.autogen.MetasMapper">
+
+	<resultMap id="MetasResult" type="Metas">
+		<result property="columnName" column="COLUMN_NAME" />
+		<result property="dataType" column="DATA_TYPE" />
+		<result property="dataScale" column="DATA_SCALE" />
+		<result property="dataDefault" column="DATA_DEFAULT" />
+	</resultMap>
+
+
+	<select id="selectTableMetas" parameterType="java.util.HashMap"
+		resultMap="MetasResult" databaseId="oracle">
+		select COLUMN_NAME,DATA_TYPE,DATA_SCALE,DATA_DEFAULT from user_tab_columns
+		where user_tab_columns.TABLE_NAME = #{tableName} order by NULLABLE DESC
+	</select>
+
+	<select id="selectTableMetas" parameterType="java.util.HashMap"
+		resultMap="MetasResult" databaseId="sqlserver">
+		SELECT
+		upper(syscolumns.name) as COLUMN_NAME,
+		upper(systypes.name) as DATA_TYPE,
+		upper(syscolumns.scale) as DATA_SCALE,
+		null as DATA_DEFAULT
+		FROM sysobjects
+		INNER JOIN syscolumns ON sysobjects.id = syscolumns.id
+		INNER JOIN systypes ON syscolumns.xtype = systypes.xtype
+		LEFT JOIN syscomments ON syscolumns.cdefault = syscomments.id
+		WHERE (sysobjects.xtype = 'U') AND (sysobjects.name <![CDATA[<>]]>
+		'dtproperties') AND (sysobjects.name = #{tableName}) AND (systypes.name <![CDATA[<>]]>
+		'sysname') AND (systypes.status <![CDATA[<>]]>
+		3)
+		group by
+		syscolumns.name,systypes.name,syscolumns.scale,syscolumns.cdefault,syscolumns.isnullable
+		order by syscolumns.isnullable DESC
+	</select>
+
+</mapper> 
